@@ -15,10 +15,9 @@ struct Cli {
     dst_socket: String,
 
     #[structopt(
-        long = "share",
-        default_value("true"),
-        parse(try_from_str),
-        help = "share bandwidth limit flag"
+        long = "unshare",
+        parse(from_flag = std::ops::Not::not),
+        help = "unshare bandwidth limit flag"
     )]
     share_bandwidth_limit: bool,
 

@@ -25,6 +25,13 @@ wget localhost:11111/100m
 cargo run -- --src=0.0.0.0:11111 --dst=localhost:22222 --verbose
 ```
 
+## figure
+``` mermaid
+flowchart LR
+    client -- "send to src socket (outbound)" --> netlim -- "response (inbound)" --> client
+    server -- "response (inbound)" --> netlim -- "send to dst socket (outbound)" --> server
+```
+
 ## NOTE
 * [tikv/async-speed-limit: Asynchronously speed-limiting multiple byte streams]( https://github.com/tikv/async-speed-limit )
   * これは`futures`向けであるが、`futures-util`のcompatモジュールを利用すると利用できるらしいが、うまくいかない

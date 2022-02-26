@@ -24,16 +24,18 @@ struct Cli {
 
     #[structopt(
         long = "in",
-        default_value("1024"),
-        help = "inbound bandwidth limit [B]"
+        default_value("1MB"),
+        parse(try_from_str = parse_size::parse_size),
+        help = "inbound bandwidth limit [Byte]"
     )]
-    inbound_bandwidth_limit: f64,
+    inbound_bandwidth_limit: u64,
     #[structopt(
         long = "out",
-        default_value("1024"),
-        help = "outbound bandwidth limit [B]"
+        default_value("1MB"),
+        parse(try_from_str = parse_size::parse_size),
+        help = "outbound bandwidth limit [Byte]"
     )]
-    outbound_bandwidth_limit: f64,
+    outbound_bandwidth_limit: u64,
 
     #[structopt(
         long = "verbose",

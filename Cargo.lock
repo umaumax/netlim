@@ -165,6 +165,7 @@ version = "0.1.0"
 dependencies = [
  "env_logger",
  "log",
+ "parse-size",
  "structopt",
  "tokio",
 ]
@@ -216,6 +217,12 @@ dependencies = [
  "smallvec",
  "windows-sys",
 ]
+
+[[package]]
+name = "parse-size"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "944553dd59c802559559161f9816429058b869003836120e262e8caec061b7ae"
 
 [[package]]
 name = "pin-project-lite"

@@ -22,7 +22,7 @@ wget localhost:11111/100m
 ## how to use
 ``` bash
 # with debug logs
-cargo run -- --src=0.0.0.0:11111 --dst=localhost:22222 --verbose=true
+cargo run -- --src=0.0.0.0:11111 --dst=localhost:22222 --verbose
 ```
 
 ## NOTE

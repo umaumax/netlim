@@ -37,12 +37,7 @@ struct Cli {
     )]
     outbound_bandwidth_limit: u64,
 
-    #[structopt(
-        long = "verbose",
-        default_value("false"),
-        parse(try_from_str),
-        help = "verbose flag"
-    )]
+    #[structopt(long = "verbose", help = "verbose flag")]
     verbose: bool,
 }
 

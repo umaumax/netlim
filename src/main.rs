@@ -10,14 +10,10 @@ use structopt::StructOpt;
 
 #[derive(StructOpt)]
 struct Cli {
-    #[structopt(long = "", default_value("0.0.0.0"), help = "src address")]
-    src_addr: String,
-    #[structopt(long = "src_port", default_value("11111"), help = "src port")]
-    src_port: String,
-    #[structopt(long = "dst_addr", default_value("localhost"), help = "dst address")]
-    dst_addr: String,
-    #[structopt(long = "dst_port", default_value("22222"), help = "dst port")]
-    dst_port: String,
+    #[structopt(long = "src", default_value("0.0.0.0:11111"), help = "src socket")]
+    src_socket: String,
+    #[structopt(long = "dst", default_value("localhost:22222"), help = "dst socket")]
+    dst_socket: String,
 
     #[structopt(
         long = "in",
@@ -38,9 +34,7 @@ struct Cli {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::from_args();
 
-    let src_socket = format!("{}:{}", args.src_addr, args.src_port);
-    let dst_socket = format!("{}:{}", args.dst_addr, args.dst_port);
-    let listener = TcpListener::bind(src_socket).await?;
+    let listener = TcpListener::bind(args.src_socket).await?;
 
     let interval_secs = 0.1;
     let interval_micros = (interval_secs * 1000.0 * 1000.0) as u64;
@@ -52,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let (mut client_stream, _) = listener.accept().await?;
 
-        let dst_socket = dst_socket.clone();
+        let dst_socket = args.dst_socket.clone();
         tokio::spawn(async move {
             eprintln!("connect from xxx");
             let mut server_stream = TcpStream::connect(dst_socket.clone()).await.unwrap();

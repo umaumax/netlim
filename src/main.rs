@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let listener = TcpListener::bind(args.src_socket).await?;
 
-    let interval_secs = 0.01;
+    let interval_secs = 0.1;
     let outbound_buffer_size = (args.outbound_bandwidth_limit as f64 * interval_secs) as usize;
     let inbound_buffer_size = (args.inbound_bandwidth_limit as f64 * interval_secs) as usize;
     // TODO: update logs

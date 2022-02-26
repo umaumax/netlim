@@ -144,7 +144,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                         {
                             let mut next_inbound_time = next_inbound_time.lock().await;
-                            *next_inbound_time = next_inbound_time.max(tokio::time::Instant::now()) + tokio::time::Duration::from_secs_f64(n as f64 / args.outbound_bandwidth_limit as f64);
+                            *next_inbound_time = next_inbound_time.max(tokio::time::Instant::now()) + tokio::time::Duration::from_secs_f64(n as f64 / args.inbound_bandwidth_limit as f64);
                         }
                     }
                 };

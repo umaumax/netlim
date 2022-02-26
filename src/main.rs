@@ -56,22 +56,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let outbound_buffer_size = (args.outbound_bandwidth_limit as f64 * interval_secs) as usize;
     let inbound_buffer_size = (args.inbound_bandwidth_limit as f64 * interval_secs) as usize;
     // TODO: update logs
-    info!("start server {:?}", listener);
+    info!("started server at {:?}", listener.local_addr()?);
 
     let next_outbound_time = Arc::new(Mutex::new(tokio::time::Instant::now()));
     let next_inbound_time = Arc::new(Mutex::new(tokio::time::Instant::now()));
 
     loop {
-        let (mut client_stream, _) = listener.accept().await?;
+        let (mut client_stream, client_addr) = listener.accept().await?;
 
         let dst_socket = args.dst_socket.clone();
 
         let mut next_outbound_time = Arc::clone(&next_outbound_time);
         let mut next_inbound_time = Arc::clone(&next_inbound_time);
         tokio::spawn(async move {
-            debug!("connect from xxx");
-            let mut server_stream = TcpStream::connect(dst_socket.clone()).await.unwrap();
-            debug!("connect to {}", dst_socket.clone());
+            info!("connected from {:?}", client_addr);
+            let mut server_stream = match TcpStream::connect(dst_socket.clone()).await {
+                Ok(s) => s,
+                Err(e) => {
+                    error!("failed to connect to dst server; err = {:?}", e);
+                    return;
+                }
+            };
+            info!("connected to dst server at {}", dst_socket.clone());
 
             let mut outbound_buf = vec![0; outbound_buffer_size];
             let mut inbound_buf = vec![0; inbound_buffer_size];
@@ -97,7 +103,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 return;
                             }
                         };
-                        debug!("-receive-> {} bytes", n);
+                        debug!("[inbound] -recv-> {} bytes", n);
 
                         match server_stream.write_all(&outbound_buf[0..n]).await {
                             Ok(_n) => {}
@@ -107,11 +113,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             }
                         }
 
-                        debug!("-send-> {} bytes", n);
+                        debug!("[inbound] -send-> {} bytes", n);
 
+                        let sleep_duration = tokio::time::Duration::from_secs_f64(n as f64 / args.outbound_bandwidth_limit as f64);
                         {
                             let mut next_outbound_time = next_outbound_time.lock().await;
-                            *next_outbound_time = next_outbound_time.max(tokio::time::Instant::now()) + tokio::time::Duration::from_secs_f64(n as f64 / args.outbound_bandwidth_limit as f64);
+                            *next_outbound_time = next_outbound_time.max(tokio::time::Instant::now()) + sleep_duration;
                         }
                     }
                     // receive(inbound)
@@ -126,7 +133,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 return;
                             }
                         };
-                        debug!("<-receive- {} bytes", n);
+                        debug!("[outbound] <-recv- {} bytes", n);
 
                         match client_stream.write_all(&inbound_buf[0..n]).await {
                             Ok(_n) => {}
@@ -135,11 +142,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 return;
                             }
                         }
-                        debug!("<-send- {} bytes", n);
+                        debug!("[outbound] <-send- {} bytes", n);
 
+                        let sleep_duration = tokio::time::Duration::from_secs_f64(n as f64 / args.inbound_bandwidth_limit as f64);
                         {
                             let mut next_inbound_time = next_inbound_time.lock().await;
-                            *next_inbound_time = next_inbound_time.max(tokio::time::Instant::now()) + tokio::time::Duration::from_secs_f64(n as f64 / args.inbound_bandwidth_limit as f64);
+                            *next_inbound_time = next_inbound_time.max(tokio::time::Instant::now()) + sleep_duration;
                         }
                     }
                 };

@@ -1,7 +1,7 @@
 use std::env;
 use std::sync::Arc;
 
-use log::{debug, error, info, warn};
+use log::{debug, error, info};
 use structopt::StructOpt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};

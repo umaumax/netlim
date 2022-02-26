@@ -40,7 +40,6 @@ struct Cli {
     verbose: bool,
 }
 
-// TODO: add run flag to determine client port and server address
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::from_args();

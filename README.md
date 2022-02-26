@@ -25,6 +25,26 @@ wget localhost:11111/100m
 cargo run -- --src=0.0.0.0:11111 --dst=localhost:22222 --verbose
 ```
 
+## help
+``` bash
+netlim 0.1.0
+
+USAGE:
+    netlim [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+        --unshare    unshare bandwidth limit flag
+    -V, --version    Prints version information
+        --verbose    verbose flag
+
+OPTIONS:
+        --dst <dst-socket>                  dst socket [default: localhost:22222]
+        --in <inbound-bandwidth-limit>      inbound bandwidth limit [Byte] [default: 1MB]
+        --out <outbound-bandwidth-limit>    outbound bandwidth limit [Byte] [default: 1MB]
+        --src <src-socket>                  src socket [default: 0.0.0.0:11111]
+```
+
 ## figure
 ``` mermaid
 flowchart LR
@@ -38,4 +58,4 @@ flowchart LR
 * inboundやoutboundのデータ量に応じて、特定の時間までsleepする仕組みで帯域制限を行っている
 * デフォルトではコネクションで帯域制限を共有している
   * ただし、コネクションごとのスケジューリングはtokio依存であるので、平等なスケジューリングとはならないことに注意
-  * コネクションごとに独立して帯域制限するオプションあり(`--share=false`)
+  * コネクションごとに独立して帯域制限するオプションあり(`--unshare`)

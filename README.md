@@ -2,6 +2,11 @@
 
 This is a bandwidth limiting tool for TCP network communication.
 
+## how to install
+``` bash
+cargo install --git https://github.com/umaumax/netlim
+```
+
 ## how to check
 ``` bash
 # mac

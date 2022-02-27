@@ -169,13 +169,11 @@ impl NetBandwidthLimitter {
             let mut outbound_buf = vec![0; outbound_buffer_size];
             let mut inbound_buf = vec![0; inbound_buffer_size];
 
-            // TODO: add close step
-
             if !share_bandwidth_limit {
                 next_outbound_time = Arc::new(Mutex::new(tokio::time::Instant::now()));
                 next_inbound_time = Arc::new(Mutex::new(tokio::time::Instant::now()));
             }
-            loop {
+            let ret: Result<(), std::io::Error> = loop {
                 let now = tokio::time::Instant::now();
                 tokio::select! {
                     // send(outbound)
@@ -183,11 +181,10 @@ impl NetBandwidthLimitter {
                     }
                     n = client_stream.read(&mut outbound_buf), if now >= *next_outbound_time.lock().await => {
                         match NetBandwidthLimitter::send_outbound(&mut server_stream, &mut outbound_buf,&next_outbound_time,outbound_bandwidth_limit,n).await {
-                            Ok(0) => break,
+                            Ok(0) => break Ok(()),
                             Ok(_) => {},
                             Err(e) => {
-                                error!("failed to read from stream; err = {:?}", e);
-                                break
+                                break Err(e);
                             }
                         };
                     }
@@ -196,16 +193,26 @@ impl NetBandwidthLimitter {
                     }
                     n = server_stream.read(&mut inbound_buf), if now >= *next_inbound_time.lock().await => {
                         match NetBandwidthLimitter::recv_inbound(&mut client_stream, &mut inbound_buf, &next_inbound_time, inbound_bandwidth_limit, n).await {
-                            Ok(0) => break,
+                            Ok(0) => break Ok(()),
                             Ok(_) => {},
                             Err(e) => {
-                                error!("failed to read from stream; err = {:?}", e);
-                                break
+                                break Err(e);
                             }
                         };
                     }
                 };
-            }
+            };
+            match ret {
+                Ok(_) => {}
+                Err(e) => {
+                    error!("failed to read or write from stream; err = {:?}", e);
+                }
+            };
+            info!("disconnected from dst server at {}", &dst_socket);
+            info!("disconnect from {:?}", client_addr);
+            // automatically called on drop, but explicitly calls the close process
+            client_stream.shutdown().await.unwrap();
+            server_stream.shutdown().await.unwrap();
         });
         Ok(())
     }

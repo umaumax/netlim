@@ -8,6 +8,7 @@ cargo install --git https://github.com/umaumax/netlim
 ```
 
 ## how to check
+wget
 ``` bash
 # mac
 mkfile -v 100m 100m
@@ -22,6 +23,22 @@ cargo run -- --src=0.0.0.0:11111 --dst=localhost:22222
 
 # client
 wget localhost:11111/100m
+```
+
+iperf3
+``` bash
+# server
+iperf3 -s
+
+# client
+netlim --src 0.0.0.0:5201 --dst $server_ip_addr:5201 --out 1MB --in 1MB
+
+iperf3 -c localhost -p 5201
+```
+
+alternative command
+``` bash
+ssh -g -N -L 5201:localhost:5201 $server_ip_addr -o ProxyCommand='pv -cN out -L 1024K | nc %h %p | pv -cN in -L 1024K'
 ```
 
 ## how to use

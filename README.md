@@ -76,8 +76,9 @@ flowchart LR
 
 ## NOTE
 * [tikv/async-speed-limit: Asynchronously speed-limiting multiple byte streams]( https://github.com/tikv/async-speed-limit )
-  * これは`futures`向けであるが、`futures-util`のcompatモジュールを利用すると利用できるらしいが、うまくいかない
-* inboundやoutboundのデータ量に応じて、特定の時間までsleepする仕組みで帯域制限を行っている
-* デフォルトではコネクションで帯域制限を共有している
-  * ただし、コネクションごとのスケジューリングはtokio依存であるので、平等なスケジューリングとはならないことに注意
-  * コネクションごとに独立して帯域制限するオプションあり(`--unshare`)
+  * これは非同期ランタイムの`tokio`ではなく、`futures`向けであるが、`futures-util`のcompatモジュールを利用すると利用できるらしいが、うまくいかない
+* inboundやoutboundのデータ量に応じて、それぞれ指定の時間までsleepする仕組みで帯域制限を行うことで実現
+* デフォルトオプションでは各コネクションで帯域制限を共有する
+  * ただし、コネクション毎のスケジューリングは`tokio`依存である
+  * ワークスティーリングスケジューラであるらしいが、実際に実行すると、特定のコネクションのみがずっと実行されるケースが確認された
+  * コネクション毎に独立して帯域制限するオプションあり(`--unshare`)
